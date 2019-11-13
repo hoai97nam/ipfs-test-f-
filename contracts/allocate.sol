@@ -30,8 +30,8 @@ contract allocate {
         storedData1.push(y);
         storedData2.push(z);
     }
-    function get() public view returns (string[] memory, string[] memory) {
-        return (storedData, storedData1);
+    function get() public view returns (string[] memory, string[] memory, address[] memory) {
+        return (storedData, storedData1, storedData2);
     }
     function length() public view returns (uint)
     {

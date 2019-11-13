@@ -1,15 +1,13 @@
 import React, { Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import getWeb3 from "./utils/getWeb3";
 import allocate from "./contracts/allocate.json";
 import App1 from "./App1";
 import App2 from "./App2";
 
 import "./App.css";
-import { SSL_OP_EPHEMERAL_RSA } from "constants";
-
 class App extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null, silo0: null, silo1: null };
+  state = { storageValue: 0, web3: null, accounts: null, contract: null,
+     silo0: null, silo1: null, silo2: null };
 
   componentWillMount = async () => {
     // Get network provider and web3 instance.
@@ -45,27 +43,31 @@ class App extends Component {
     // console.log('votes', countVote);
 
     // if (await countVote >= 2) {
-    //   await this.state.contract.methods.grant(this.state.account).send({ from: this.state.account });
+    //   await this.state.contract.methods.grant(this.state.account)
+    // .send({ from: this.state.account });
     //   alert('You received ethers');
     //   console.log('getupvote process');
     // }
 
     // Update state with the result.
-    this.setState({ storageValue: response[0], silo0: response[0], silo1: response[1] });
+    this.setState({ storageValue: response[0], silo0: 
+      response[0], silo1: response[1], silo2: response[2] });
     var j;
     const s = this.state.storageValue;
     // let frame = [];
     for (j = 0; j < s.length - 2; j++) {
       this.setState({ silo0: response[0][j] })
-      console.log(this.state.silo0);
+      console.log('hash: ',this.state.silo0);
       this.setState({ silo1: response[1][j] })
-      console.log(this.state.silo1);
+      console.log('title: ', this.state.silo1);
+      this.setState({ silo2: response[2][j] })
+      console.log('address: ', this.state.silo2);
     }
   }
 
   onSubmit = async (event) => {
     event.preventDefault()
-    await this.state.contract.methods.upVote(this.state.account).send({ from: this.state.account });
+    await this.state.contract.methods.upVote(this.state.silo2).send({ from: this.state.account });
     alert('You voted this content');
     console.log('vote process')
   }
