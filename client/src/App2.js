@@ -8,7 +8,10 @@ import "./App.css";
 import { SSL_OP_EPHEMERAL_RSA } from "constants";
 
 class App2 extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null, silo0: null, silo1: null };
+  state = {
+    storageValue: 0, web3: null, accounts: null, contract: null,
+    silo0: null, silo1: null, silo2: null
+  };
 
   componentWillMount = async () => {
     // Get network provider and web3 instance.
@@ -22,25 +25,48 @@ class App2 extends Component {
       allocate.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    this.setState({ web3, accounts, contract: instance }, this.runExample);
+    this.setState({ web3, account: accounts[0], contract: instance }, this.runExample);
   }
 
   runExample = async () => {
     const { accounts, contract } = this.state;
     const response = await contract.methods.get().call();
+    const balance = await contract.methods.getBalance().call();
+
     // Update state with the result.
-    this.setState({ storageValue: response[0], silo0: response[0], silo1: response[1] });
-    var i, j;
+    this.setState({
+      storageValue: response[0],
+      silo0: response[0], silo1: response[1], silo2: response[2]
+    });
+    var j;
     const s = this.state.storageValue;
-    // let frame = [];
+
     for (j = 0; j < s.length; j++) {
       this.setState({ silo0: response[0][j] })
       console.log(this.state.silo0);
       this.setState({ silo1: response[1][j] })
       console.log(this.state.silo1);
-    } 
+      this.setState({ silo2: response[2][j] })
+      console.log('address: ', this.state.silo2);
+    }
+    const countVote = await contract.methods.getUpVote(this.state.account).call()
+      .then(i => {
+        if ((i > 0) & (i % 3 === 0) & (this.state.silo2 === this.state.account)) {
+          console.log('vote:', i);
+          this.state.contract.methods.grant(this.state.account)
+            .send({ from: this.state.account });
+          alert('You received ethers(3) \n Confirm your transaction');
+        }
+      });
+    console.log('balance', balance);
   }
-  componentDidMount(){
+  onSubmit = async (event) => {
+    event.preventDefault()
+    await this.state.contract.methods.upVote(this.state.silo2).send({ from: this.state.account });
+    alert('You voted this content');
+    console.log('vote process', this.state.silo1)
+  }
+  componentDidMount() {
 
   }
 
@@ -49,7 +75,9 @@ class App2 extends Component {
       <div className="App" >
         <video width="200" height="150" src={`https://ipfs.io/ipfs/${this.state.silo0}`} type="video/mp4" autoPlay />
         <p>{this.state.silo1}</p>
-        
+        <form onSubmit={this.onSubmit}>
+          <button class="button" ><span>upvote</span></button>
+        </form>
       </div>
     );
   }
